@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RUNTIME = ROOT / ".runtime" / "chatterbox-test"
 os.environ.setdefault("HF_HOME", str(RUNTIME / "huggingface"))
 os.environ.setdefault("XDG_CACHE_HOME", str(RUNTIME / "cache"))
+os.environ.setdefault("PKUSEG_HOME", str(RUNTIME / "pkuseg"))
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
 import numpy as np
