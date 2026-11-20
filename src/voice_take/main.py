@@ -91,6 +91,10 @@ class Pronunciation(BaseModel):
     spoken: Alias
 
 
+class PronunciationPreview(SegmentPreview):
+    pronunciation: Pronunciation
+
+
 @asynccontextmanager
 async def lifespan(app):
     store.initialize()
@@ -406,6 +410,16 @@ def generate(body: Generation, background: BackgroundTasks):
 
 @app.post("/api/segments/preview")
 def preview_segment(body: SegmentPreview):
+    return render_preview(body)
+
+
+@app.post("/api/pronunciations/preview")
+def preview_pronunciation(body: PronunciationPreview):
+    entry = body.pronunciation
+    return render_preview(body, {normalize("NFC", entry.written).casefold(): entry.spoken})
+
+
+def render_preview(body: SegmentPreview, overrides=None):
     if mode != "demo":
         raise HTTPException(409, "Draft segment preview is available in local mode. You can play saved segments in Takes.")
     if body.index >= len(body.scenes):
@@ -421,7 +435,7 @@ def preview_segment(body: SegmentPreview):
         )
         sample_rate = max(rate, 24000) if has_characters else rate
         take = {"scenes": scenes, "sample_rate": sample_rate, "language": language, "segment_gap_ms": gap}
-        pcm = render_segment(take, body.index, voice_id, take_aliases(project_id))
+        pcm = render_segment(take, body.index, voice_id, {**take_aliases(project_id), **(overrides or {})})
         return Response(wav_bytes(pcm, sample_rate), media_type="audio/wav")
     except (ValueError, OSError, subprocess.SubprocessError):
         raise HTTPException(503, "Could not render this segment preview.") from None
