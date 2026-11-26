@@ -44,6 +44,13 @@ Restart the API in its default `demo` mode. With the assets installed, Hindi syn
 
 ## Project structure
 
+Take responses now include optional `progress` metadata with `stage`, `completed`,
+`total`, `current_line` and `operation`. Stages are queued, generating, assembling,
+complete and failed. Counts represent generated lines, not elapsed time. Retakes
+have one unit of generation work; unchanged clips are reused. WAV/SRT assembly
+is reported separately; MP3 encoding still happens when the MP3 is requested.
+Existing take records without this field remain readable.
+
 ```text
 src/voice_take/     API, voice selection, synthesis, audio processing and storage
 tests/             API and audio regression tests

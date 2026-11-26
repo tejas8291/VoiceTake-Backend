@@ -23,6 +23,8 @@ class Store:
                 take = json.loads(payload)
                 if take["status"] in {"queued", "running"}:
                     take.update(status="failed", error="Generation was interrupted. Try again.")
+                    if "progress" in take:
+                        take["progress"].update(stage="failed", current_line=None)
                     db.execute("UPDATE takes SET payload = ? WHERE id = ?",
                                (json.dumps(take), take["id"]))
 

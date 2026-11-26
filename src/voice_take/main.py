@@ -185,6 +185,8 @@ def render(take, previous_take, index, keep_timing, voice_id, aliases):
             if previous_take and position != index:
                 clip = (store.root / previous_take["id"] / clip_name).read_bytes()
             else:
+                take["progress"].update(stage="generating", current_line=position + 1)
+                store.save(take)
                 clip = render_segment(take, position, voice_id, aliases)
                 if previous_take and keep_timing:
                     original = store.root / previous_take["id"] / clip_name
@@ -197,14 +199,21 @@ def render(take, previous_take, index, keep_timing, voice_id, aliases):
                     clip += bytes(remaining)
             (folder / clip_name).write_bytes(clip)
             clips.append(clip)
+            if not previous_take or position == index:
+                take["progress"]["completed"] += 1
+                store.save(take)
+        take["progress"].update(stage="assembling", current_line=None)
+        store.save(take)
         take["duration"] = export_take(folder, scenes, clips, sample_rate)
         take["status"] = "ready"
+        take["progress"].update(stage="complete")
         store.save(take)
     except Exception as error:
         shutil.rmtree(folder, ignore_errors=True)
         logger.warning("Take %s failed (%s)", take["id"], type(error).__name__)
         take.update(status="failed", error=str(error) if isinstance(error, ValueError)
                     else "Audio generation failed. Check the local engine and try again.")
+        take["progress"].update(stage="failed", current_line=None)
         store.save(take)
     finally:
         generation_lock.release()
@@ -271,6 +280,9 @@ def queue(scenes, background, earlier=None, index=None, keep_timing=False, selec
         take = {"id": uuid4().hex, "status": "queued", "scenes": scenes, "sample_rate": sample_rate,
                 "provider": mode, "voice_id": voice_id, "language": language,
                 "project_id": project_id, "segment_gap_ms": segment_gap_ms}
+        take["progress"] = {"stage": "queued", "completed": 0,
+                            "total": 1 if earlier else len(scenes), "current_line": None,
+                            "operation": "retake" if earlier else "narration"}
         aliases = take_aliases(project_id)
         store.save(take)
         background.add_task(render, take, earlier, index, keep_timing, voice_id, aliases)
