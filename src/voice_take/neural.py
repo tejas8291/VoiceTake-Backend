@@ -83,17 +83,29 @@ def _model():
                   str(model_directory / "voices-v1.0.bin"))
 
 
+def prepare_hindi_text(text: str, style: str) -> str:
+    """Speech-only spellings for verified eSpeak errors; never alter captions.
+
+    Match whole Indic words, including combining marks, rather than Python's
+    Unicode \\w boundaries (which exclude vowel signs and nasalization marks).
+    """
+    spoken = RUPEE_AMOUNT.sub(lambda amount: amount[1] + " रुपये", normalize("NFC", text))
+    aliases = {"काँपने": "कांपने", "बेडरूम": "बेड रूम", "हमशक्ल": "हमशक्ल्",
+               "फोन": "फ़ोन", "तरफ": "तरफ़", "धीरे-धीरे": "धीरे धीरे"}
+    for written, pronunciation in aliases.items():
+        spoken = re.sub(r"(?<![\w\u0900-\u097f\u200c\u200d])" + re.escape(written)
+                        + r"(?![\w\u0900-\u097f\u200c\u200d])", pronunciation, spoken)
+    spoken = spoken.replace("।", ".")
+    spoken = re.sub(r"\.{3,}|…+", "…" if style != "warning" else ",", spoken)
+    return re.sub(r"\s+([,.!?…])", r"\1", spoken)
+
+
 def synthesize_hindi(text: str, style: str, *, has_next_line: bool, speaker: str, tempo: float = 1.0) -> bytes:
     import numpy as np
 
     speed, sentence_pause, clause_pause = DELIVERY[style]
     model = _model()
-    spoken = RUPEE_AMOUNT.sub(lambda amount: amount[1] + " रुपये", normalize("NFC", text)).replace("।", ".")
-    # The Hindi phonemizer otherwise adds a final schwa to this loanword.
-    spoken = re.sub(r"(?<!\w)हमशक्ल(?![\w्])", "हमशक्ल्", spoken)
-    spoken = re.sub(r"(?<!\w)फोन(?![\w़्])", "फ़ोन", spoken)
-    spoken = re.sub(r"\.{3,}|…+", "…" if style != "warning" else ",", spoken)
-    spoken = re.sub(r"\s+([,.!?…])", r"\1", spoken)
+    spoken = prepare_hindi_text(text, style)
     phonemes = model.tokenizer.phonemize(spoken, "hi")
     phonemes = ESPEAK_LANGUAGE_MARKER.sub("", phonemes)
     if not phonemes:
