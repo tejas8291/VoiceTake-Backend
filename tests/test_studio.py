@@ -54,7 +54,9 @@ class StudioTest(unittest.TestCase):
 
             old_srt = download(original, "captions.srt").text
             new_srt = download(revised, "captions.srt").text
-            self.assertEqual(old_srt.split("\n\n")[1], new_srt.split("\n\n")[1])
+            # Windows exports valid CRLF SRT; compare logical blocks on every platform.
+            self.assertEqual(old_srt.replace("\r\n", "\n").split("\n\n")[1],
+                             new_srt.replace("\r\n", "\n").split("\n\n")[1])
             self.assertIn("Hello Acme.", new_srt)
             self.assertNotIn("Ack me", new_srt)
             start = original["scenes"][0]["spoken_frames"]
