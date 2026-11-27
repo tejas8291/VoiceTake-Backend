@@ -1,8 +1,42 @@
-# VoiceTake Backend
+# VoiceTake Studio Backend
 
-Python FastAPI service for VoiceTake Studio. It generates narration, previews and retakes, stores take metadata in SQLite, applies pronunciation dictionaries and exports WAV, MP3 and SRT.
+VoiceTake Studio is a local AI voiceover application for creators who want to turn scripts into editable narration, with a particular focus on Hindi storytelling. It supports Hindi, Hinglish and English according to the selected engine and voice.
 
-The local Hindi pipeline uses Kokoro ONNX with supported installed voices. The demo engine uses eSpeak NG. FFmpeg handles export processing. Kokoro storytelling presets adjust pacing, pauses and levels.
+## Why we built it
+
+Independent creators may not have a quiet recording space, professional equipment or a voice artist budget. Recording and correcting narration can also take several attempts. Text-to-speech helps, but pronunciation mistakes, awkward pauses and a single line that needs another take can still create extra editing work.
+
+VoiceTake brings script editing, pronunciation overrides, per-line delivery controls and audio exports into one workflow. A creator can preview or retake a passage while preserving the rest of the narration.
+
+## Who it helps
+
+- Hindi storytellers and YouTubers producing recurring episodes.
+- Short-form creators preparing voiceovers for social videos.
+- Educators and independent creators who need editable narration.
+
+## How a creator uses it
+
+1. Create a project and paste or write a script.
+2. Select the script language and a supported narrator; compare Hindi voice samples if needed.
+3. Separate narration and dialogue, adjust speed and pauses, and add pronunciation overrides.
+4. Generate a take, listen to the result, and preview or retake individual lines.
+5. Compare takes and export WAV or MP3 audio with timed SRT subtitles.
+
+The local workflow does not require a paid API. It is designed for one creator on their own computer. Kokoro presets adjust pacing, pauses and levels; they do not provide true emotion prompting or guarantee human-level acting. Local Kokoro does not clone an uploaded voice.
+
+## Planned improvements
+
+Priorities include Hindi pronunciation and narration consistency, clearer correction workflows, longer-script handling, and continued usability improvements. More languages and voices will be evaluated before introduction. Public hosting and multi-user infrastructure are future work, not current capabilities.
+
+## What this repository contains
+
+This repository contains the Python FastAPI service: synthesis endpoints, voice and language validation, pronunciation dictionaries, segment previews and retakes, WAV/MP3/SRT exports, and SQLite take metadata.
+
+Hindi synthesis uses installed Kokoro ONNX assets; eSpeak NG supports the local speech pipeline, and FFmpeg handles audio processing and conversion. Use the companion [VoiceTake Frontend](https://github.com/tejas8291/VoiceTake-Frontend) for the complete creator interface.
+
+## Viewing and reuse
+
+This is a source-visible portfolio project. Original VoiceTake code is not offered under a general reuse license; see [COPYRIGHT.md](COPYRIGHT.md) before reusing it. Third-party software and models retain their own licenses. Development used AI assistance from Codex; this project did not train the Kokoro model.
 
 ## Setup
 
