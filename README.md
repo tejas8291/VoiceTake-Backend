@@ -155,4 +155,4 @@ This is a local single-creator application, not a hosted multi-user service. A l
 
 ## Release readiness
 
-Dependency credits are documented, but legacy `studio-microphone.jpg` artwork in the frontend still needs provenance verification. Source visibility is not a claim that all assets are cleared for redistribution. Fresh Windows setup and physical iPhone checks remain pending.
+Dependency credits are documented. The retained source of the legacy microphone artwork is recorded in the frontend's `docs/asset-provenance.md`; this is not a blanket redistribution clearance. Fresh Windows laptop setup with Kokoro assets and physical iPhone checks remain deferred.
